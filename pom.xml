@@ -57,10 +57,11 @@
 
         <!-- ProtocolLib (рабочая версия) -->
         <dependency>
-            <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>5.1.0</version>
-            <scope>provided</scope>
+             <groupId>com.comphenix.protocol</groupId>
+             <artifactId>ProtocolLib</artifactId>
+             <version>5.1.0</version>
+             <scope>system</scope>
+             <systemPath>${project.basedir}/lib/ProtocolLib.jar</systemPath>
         </dependency>
 
     </dependencies>
