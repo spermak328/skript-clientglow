@@ -13,18 +13,30 @@
     <name>ClientGlow</name>
     <description>Client-side glow for Skript</description>
 
+    <!-- ✅ РЕПОЗИТОРИИ -->
     <repositories>
+
+        <!-- Paper -->
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+
+        <!-- CodeMC (ProtocolLib) -->
         <repository>
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
 
+        <!-- Skript -->
         <repository>
             <id>skript-repo</id>
             <url>https://repo.skriptlang.org/releases</url>
         </repository>
+
     </repositories>
 
+    <!-- ✅ ЗАВИСИМОСТИ -->
     <dependencies>
 
         <!-- Paper API -->
@@ -43,16 +55,17 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- ProtocolLib (ТЕПЕРЬ НУЖЕН, т.к. ты его используешь) -->
+        <!-- ProtocolLib (рабочая версия) -->
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>5.4.0</version>
+            <version>5.1.0</version>
             <scope>provided</scope>
         </dependency>
 
     </dependencies>
 
+    <!-- ✅ BUILD -->
     <build>
         <plugins>
 
