@@ -6,9 +6,13 @@ import ch.njol.util.Kleenean;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedDataValue;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+
+import java.util.List;
 
 public class EffClientGlow extends Effect {
 
@@ -31,15 +35,19 @@ public class EffClientGlow extends Effect {
 
             packet.getIntegers().write(0, entity.getEntityId());
 
-            byte flags = entity.getEntityId() != 0 ? (byte) 0x40 : 0;
+            byte flags = 0x40; // glow
             if (remove) flags = 0;
 
-            packet.getWatchableCollectionModifier().write(0, java.util.List.of(
-                    new com.comphenix.protocol.wrappers.WrappedWatchableObject(
-                            0,
-                            flags
-                    )
-            ));
+            WrappedDataWatcher.Serializer serializer =
+                    WrappedDataWatcher.Registry.get(Byte.class);
+
+            WrappedDataValue value = new WrappedDataValue(
+                    0, // index флагов
+                    serializer,
+                    flags
+            );
+
+            packet.getDataValueCollectionModifier().write(0, List.of(value));
 
             manager.sendServerPacket(viewer, packet);
 
