@@ -3,61 +3,62 @@ package ru.spermak.clientglow;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.util.Kleenean;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.entity.Entity;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
-import java.util.List;
-
 public class EffClientGlow extends Effect {
 
-    private Expression<org.bukkit.entity.Entity> entityExpr;
+    private Expression<Entity> entityExpr;
     private Expression<Player> playerExpr;
     private boolean remove;
 
     @Override
     protected void execute(Event e) {
-        org.bukkit.entity.Entity bukkitEntity = entityExpr.getSingle(e);
+        Entity entity = entityExpr.getSingle(e);
         Player viewer = playerExpr.getSingle(e);
-        if (bukkitEntity == null || viewer == null) return;
+        if (entity == null || viewer == null) return;
 
-        Entity nms = ((CraftEntity) bukkitEntity).getHandle();
-        SynchedEntityData data = nms.getEntityData();
+        try {
+            ProtocolManager manager = ProtocolLibrary.getProtocolManager();
 
-        byte flags = data.get(Entity.DATA_SHARED_FLAGS_ID);
+            PacketContainer packet = manager.createPacket(
+                    com.comphenix.protocol.PacketType.Play.Server.ENTITY_METADATA
+            );
 
-        if (remove) {
-            flags &= ~0x40;
-        } else {
-            flags |= 0x40;
+            packet.getIntegers().write(0, entity.getEntityId());
+
+            byte flags = entity.getEntityId() != 0 ? (byte) 0x40 : 0;
+            if (remove) flags = 0;
+
+            packet.getWatchableCollectionModifier().write(0, java.util.List.of(
+                    new com.comphenix.protocol.wrappers.WrappedWatchableObject(
+                            0,
+                            flags
+                    )
+            ));
+
+            manager.sendServerPacket(viewer, packet);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
-        data.set(Entity.DATA_SHARED_FLAGS_ID, flags);
-
-        ClientboundSetEntityDataPacket packet =
-                new ClientboundSetEntityDataPacket(
-                        nms.getId(),
-                        List.of(data.packDirty().get(0))
-                );
-
-        ((CraftPlayer) viewer).getHandle().connection.send(packet);
-    }
-
-    @Override
-    public String toString(Event e, boolean debug) {
-        return "client glow";
     }
 
     @Override
     public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed,
                         ch.njol.skript.lang.SkriptParser.ParseResult parseResult) {
-        entityExpr = (Expression<org.bukkit.entity.Entity>) expr[0];
+        entityExpr = (Expression<Entity>) expr[0];
         playerExpr = (Expression<Player>) expr[1];
         remove = matchedPattern == 1;
         return true;
+    }
+
+    @Override
+    public String toString(Event e, boolean debug) {
+        return "client glow";
     }
 }
