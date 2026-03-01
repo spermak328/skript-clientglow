@@ -18,27 +18,23 @@
     </properties>
 
     <repositories>
-
-        <!-- Paper repo -->
         <repository>
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
 
-        <!-- Skript repo -->
         <repository>
             <id>skript-repo</id>
             <url>https://repo.skriptlang.org/releases</url>
         </repository>
-
     </repositories>
 
     <dependencies>
 
-        <!-- PAPER DEV BUNDLE (ВАЖНО) -->
+        <!-- Paper API -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-dev-bundle</artifactId>
+            <artifactId>paper-api</artifactId>
             <version>1.21.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -56,6 +52,7 @@
     <build>
         <plugins>
 
+            <!-- Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -64,6 +61,20 @@
                     <source>21</source>
                     <target>21</target>
                 </configuration>
+            </plugin>
+
+            <!-- Paperweight (ВОТ ЧТО НЕ ХВАТАЛО) -->
+            <plugin>
+                <groupId>io.papermc.paperweight</groupId>
+                <artifactId>paperweight-userdev</artifactId>
+                <version>1.7.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>reobf</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
