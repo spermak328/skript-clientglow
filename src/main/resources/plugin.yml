@@ -1,0 +1,5 @@
+name: ClientGlow
+version: 1.0
+main: ru.spermak.clientglow.ClientGlowAddon
+api-version: 1.20
+depend: [Skript]
