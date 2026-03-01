@@ -41,10 +41,10 @@
     <dependencies>
 
         <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+             <groupId>com.comphenix.protocol</groupId>
+             <artifactId>ProtocolLib</artifactId>
+             <version>5.1.0</version>
+             <scope>provided</scope>
         </dependency>
 
         <dependency>
