@@ -4,9 +4,15 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.util.Kleenean;
-import org.bukkit.entity.Entity;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+
+import java.util.List;
 
 public class ClientGlowAddon {
 
@@ -18,22 +24,36 @@ public class ClientGlowAddon {
 
     public static class EffClientGlow extends Effect {
 
-        private Expression<Entity> entity;
-        private Expression<Player> player;
+        private Expression<org.bukkit.entity.Entity> entityExpr;
+        private Expression<Player> playerExpr;
         private boolean remove;
 
         @Override
         protected void execute(Event e) {
-            Entity ent = entity.getSingle(e);
-            Player viewer = player.getSingle(e);
-            if (ent == null || viewer == null) return;
+            org.bukkit.entity.Entity bukkitEntity = entityExpr.getSingle(e);
+            Player viewer = playerExpr.getSingle(e);
+            if (bukkitEntity == null || viewer == null) return;
 
-            // ПОКА ЗАГЛУШКА — позже вставим packet glowing
-            if (!remove) {
-                viewer.sendMessage("§a[ClientGlow] glow ON for " + ent.getName());
+            Entity nms = ((CraftEntity) bukkitEntity).getHandle();
+
+            SynchedEntityData data = nms.getEntityData();
+            byte flags = data.get(new SynchedEntityData.DataItemAccessor<>(0));
+
+            if (remove) {
+                flags &= ~0x40;
             } else {
-                viewer.sendMessage("§c[ClientGlow] glow OFF for " + ent.getName());
+                flags |= 0x40;
             }
+
+            data.set(new SynchedEntityData.DataItemAccessor<>(0), flags);
+
+            ClientboundSetEntityDataPacket packet =
+                    new ClientboundSetEntityDataPacket(
+                            nms.getId(),
+                            List.of(data.packDirty().get(0))
+                    );
+
+            ((CraftPlayer) viewer).getHandle().connection.send(packet);
         }
 
         @Override
@@ -44,8 +64,8 @@ public class ClientGlowAddon {
         @Override
         public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed,
                             ch.njol.skript.lang.SkriptParser.ParseResult parseResult) {
-            entity = (Expression<Entity>) expr[0];
-            player = (Expression<Player>) expr[1];
+            entityExpr = (Expression<org.bukkit.entity.Entity>) expr[0];
+            playerExpr = (Expression<Player>) expr[1];
             remove = matchedPattern == 1;
             return true;
         }
