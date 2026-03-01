@@ -4,14 +4,12 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.util.Kleenean;
-import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-
-import java.util.UUID;
 
 public class ClientGlowAddon {
 
@@ -27,6 +25,8 @@ public class ClientGlowAddon {
         private Expression<Player> playerExpr;
         private boolean remove;
 
+        private static final String TEAM_NAME = "clientglow";
+
         @Override
         protected void execute(Event e) {
             Entity target = entityExpr.getSingle(e);
@@ -34,16 +34,13 @@ public class ClientGlowAddon {
             if (target == null || viewer == null) return;
 
             Scoreboard board = viewer.getScoreboard();
-
-            String teamName = "cg_" + target.getUniqueId().toString().substring(0, 12);
-            Team team = board.getTeam(teamName);
+            Team team = board.getTeam(TEAM_NAME);
 
             if (!remove) {
                 if (team == null) {
-                    team = board.registerNewTeam(teamName);
-                    team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+                    team = board.registerNewTeam(TEAM_NAME);
                     team.setCanSeeFriendlyInvisibles(true);
-                    team.setColor(org.bukkit.ChatColor.WHITE); // цвет glow
+                    team.setColor(ChatColor.WHITE);
                 }
 
                 team.addEntry(target.getUniqueId().toString());
