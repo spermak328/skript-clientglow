@@ -4,15 +4,14 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.util.Kleenean;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.entity.Entity;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
-import java.util.List;
+import java.util.UUID;
 
 public class ClientGlowAddon {
 
@@ -24,36 +23,35 @@ public class ClientGlowAddon {
 
     public static class EffClientGlow extends Effect {
 
-        private Expression<org.bukkit.entity.Entity> entityExpr;
+        private Expression<Entity> entityExpr;
         private Expression<Player> playerExpr;
         private boolean remove;
 
         @Override
         protected void execute(Event e) {
-            org.bukkit.entity.Entity bukkitEntity = entityExpr.getSingle(e);
+            Entity target = entityExpr.getSingle(e);
             Player viewer = playerExpr.getSingle(e);
-            if (bukkitEntity == null || viewer == null) return;
+            if (target == null || viewer == null) return;
 
-            Entity nms = ((CraftEntity) bukkitEntity).getHandle();
+            Scoreboard board = viewer.getScoreboard();
 
-            SynchedEntityData data = nms.getEntityData();
-            byte flags = data.get(new SynchedEntityData.DataItemAccessor<>(0));
+            String teamName = "cg_" + target.getUniqueId().toString().substring(0, 12);
+            Team team = board.getTeam(teamName);
 
-            if (remove) {
-                flags &= ~0x40;
+            if (!remove) {
+                if (team == null) {
+                    team = board.registerNewTeam(teamName);
+                    team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+                    team.setCanSeeFriendlyInvisibles(true);
+                    team.setColor(org.bukkit.ChatColor.WHITE); // цвет glow
+                }
+
+                team.addEntry(target.getUniqueId().toString());
             } else {
-                flags |= 0x40;
+                if (team != null) {
+                    team.removeEntry(target.getUniqueId().toString());
+                }
             }
-
-            data.set(new SynchedEntityData.DataItemAccessor<>(0), flags);
-
-            ClientboundSetEntityDataPacket packet =
-                    new ClientboundSetEntityDataPacket(
-                            nms.getId(),
-                            List.of(data.packDirty().get(0))
-                    );
-
-            ((CraftPlayer) viewer).getHandle().connection.send(packet);
         }
 
         @Override
@@ -64,7 +62,7 @@ public class ClientGlowAddon {
         @Override
         public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed,
                             ch.njol.skript.lang.SkriptParser.ParseResult parseResult) {
-            entityExpr = (Expression<org.bukkit.entity.Entity>) expr[0];
+            entityExpr = (Expression<Entity>) expr[0];
             playerExpr = (Expression<Player>) expr[1];
             remove = matchedPattern == 1;
             return true;
