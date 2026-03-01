@@ -12,8 +12,8 @@
 
     <repositories>
         <repository>
-            <id>dmulloy2-repo</id>
-            <url>https://repo.dmulloy2.net/repository/public/</url>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
 
         <repository>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>5.1.0</version>
+            <version>5.0.0</version>
             <scope>provided</scope>
         </dependency>
 
